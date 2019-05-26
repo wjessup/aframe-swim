@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <!-- https://cdn.jsdelivr.net/npm/aframe@0.9.2/dist/aframe-master.min.js -->
+    <script src="./aframe.min.js" ></script>
+    <script src="./App.js" type="module"></script>
+    <script type="module" defer>
+
+      let bodyHTML = `<a-scene fog="type: linear; color: #2D9CDB; far:40;">
+        <a-assets>
+          <a-asset-item id="lizard" src="../models/lizard/scene.gltf"></a-asset-item>
+          <a-asset-item id="octopolice" src="../models/octopolice/scene.gltf"></a-asset-item>
+          <a-asset-item id="land" src="./models/land/underwater.gltf"></a-asset-item>
+        </a-assets>
+
+        <a-gltf-model id="lizard-model" src="#lizard" position="-15 0 -30" scale="3.0, 3.0, 3.0" ></a-gltf-model>
+        <a-gltf-model land-collider id="land-model" src="#land" position="0 0 0" scale="20 20 20"></a-gltf-model>
+
+        <a-sky color="#121212"></a-sky>
+
+        <a-camera id="main-camera" look-controls swim-controls wasd-controls="fly:true; acceleration:350; easing:15;" fov="80" position="0 0 5">
+
+          <a-entity id="radar-device"></a-entity>
+
+
+        </a-camera>
+        <a-entity game-world></a-entity>
+      </a-scene>`
+
+      document.querySelector('body').innerHTML = bodyHTML
+
+    </script>
+  </head>
+  <body>
+
+  </body>
+
+</html>
