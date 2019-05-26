@@ -7,12 +7,9 @@
 
       let bodyHTML = `<a-scene fog="type: linear; color: #2D9CDB; far:40;">
         <a-assets>
-          <a-asset-item id="lizard" src="../models/lizard/scene.gltf"></a-asset-item>
-          <a-asset-item id="octopolice" src="../models/octopolice/scene.gltf"></a-asset-item>
           <a-asset-item id="land" src="./models/land/underwater.gltf"></a-asset-item>
         </a-assets>
 
-        <a-gltf-model id="lizard-model" src="#lizard" position="-15 0 -30" scale="3.0, 3.0, 3.0" ></a-gltf-model>
         <a-gltf-model land-collider id="land-model" src="#land" position="0 0 0" scale="20 20 20"></a-gltf-model>
 
         <a-sky color="#121212"></a-sky>
