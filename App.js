@@ -22,7 +22,9 @@ AFRAME.registerComponent('game-world', {
 
        //'e' key
        if (e.keyCode == 69) hologramController()
+       console.log("end of keyup")
      })
+
 
    },
    tick: function() {
@@ -98,14 +100,9 @@ AFRAME.registerComponent('player-collider', {
       if ( collisions.length > 0 ) {
         //console.log( collisions[0].distance, collisions[ 0 ].face.normal, this.rays[i] )
 
-/*
-        this.position.x -= this.rays[i].x * (collisions[0].distance < 1.0) ? scale*2 : scale
-        this.position.y -= this.rays[i].y * (collisions[0].distance < 1.0) ? scale*2 : scale
-        this.position.z -= this.rays[i].z * (collisions[0].distance < 1.0) ? scale*2 : scale
-*/
-        this.position.x -= this.rays[i].x *  scale
-        this.position.y -= this.rays[i].y *  scale
-        this.position.z -= this.rays[i].z *  scale
+        this.position.x -= this.rays[i].x * (2.0 - collisions[0].distance)
+        this.position.y -= this.rays[i].y * (2.0 - collisions[0].distance)
+        this.position.z -= this.rays[i].z * (2.0 - collisions[0].distance)
 
       }
 

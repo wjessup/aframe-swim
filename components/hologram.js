@@ -1,4 +1,4 @@
-
+import { meshMap } from '../utils.js'
 
 let vertexShader = `
 varying vec3 vPosition;
@@ -101,6 +101,7 @@ AFRAME.registerComponent('hologram', {
   },
 
   init: function () {
+    console.log("starting hologram component...")
     this.previousMaterials = {}
 
     this.material  = new THREE.ShaderMaterial({
@@ -115,18 +116,97 @@ AFRAME.registerComponent('hologram', {
       vertexShader,
       fragmentShader
     })
+    console.log(this.material)
 
-
-    this.el.addEventListener('model-loaded', () => { this.update() })
     this.clock = new THREE.Clock()
     //this.clock.start()
+    this.centerX = 0
+    this.centerY = 0
+
+    const mesh = this.el.getObject3D('mesh')
+    console.log(mesh)
+
+    if (mesh) {
+      mesh.traverse(node => {
+
+        if (node.isMesh) {
+          console.log("inside")
+          try {
+            if (node.material.isGLTFSpecularGlossinessMaterial) {
+              node.onBeforeRender = function () {}
+            }
+            this.previousMaterials[node.id] = node.material
+
+            node.geometry.clearGroups();
+            node.geometry.addGroup( 0, Infinity, 0 );
+            node.geometry.addGroup( 0, Infinity, 1 );
+
+            console.log(this)
+            console.log(node.material)
+            console.log(this.material)
+            var newNode = new THREE.Mesh(node.geometry, [node.material, this.material])
+
+            node.material = newNode.materials
+            console.log(node)
+          } catch(e) {
+            console.log(e)
+          }
+          console.log("inside done")
+        }
+      })
+    }
+
+    var camera = document.querySelector('#main-camera')
+    console.log(camera.object3D.position)
+    this.centerX = camera.object3D.position.x
+    this.centerZ = camera.object3D.position.z
+
+  },
+  remove: function () {
+    const mesh = this.el.getObject3D('mesh')
+    if (mesh) {
+      mesh.traverse(node => {
+        if (node.isMesh) {
+          node.material = this.previousMaterials[node.id]
+        }
+      })
+    }
+
+    this.el.removeEventListener('model-loaded', () => { this.update() })
+  },
+  tick: function (time, deltaTime) {
+    this.material.uniforms.time.value = this.clock.getElapsedTime();
+
+    this.material.uniforms.centerX.value = this.centerX
+    this.material.uniforms.centerZ.value = this.centerZ
+  }
+})
+/*
+    this.material  = new THREE.ShaderMaterial({
+      transparent: true,
+      polygonOffset: true,
+      polygonOffsetFactor: - 10,
+      uniforms: {
+        time: { value: 0.0 },
+        centerX: { value: 0.0 },
+        centerZ: { value: 0.0 }
+      },
+      vertexShader,
+      fragmentShader
+    })
+*/
+
+  /*
+    //this.el.addEventListener('model-loaded', () => { this.update() })
+    this.clock = new THREE.Clock()
+    this.clock.start()
     this.centerX = 0
     this.centerY = 0
   },
 
   update: function () {
     const mesh = this.el.getObject3D('mesh')
-
+      console.log(this.material)
     if (mesh) {
       mesh.traverse(node => {
         if (node.isMesh) {
@@ -162,10 +242,12 @@ AFRAME.registerComponent('hologram', {
 
     this.el.removeEventListener('model-loaded', () => { this.update() })
   },
+
   tick: function (time, deltaTime) {
     this.material.uniforms.time.value = this.clock.getElapsedTime();
 
     this.material.uniforms.centerX.value = this.centerX
     this.material.uniforms.centerZ.value = this.centerZ
   }
-})
+
+})  */
