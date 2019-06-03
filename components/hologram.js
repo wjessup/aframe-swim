@@ -144,9 +144,9 @@ AFRAME.registerComponent('hologram', {
             console.log(this)
             console.log(node.material)
             console.log(this.material)
-            var newNode = new THREE.Mesh(node.geometry, [node.material, this.material])
+            //var newNode = new THREE.Mesh(node.geometry, [node.material, this.material])
 
-            node.material = newNode.materials
+            node.material = [node.material, this.material]
             console.log(node)
           } catch(e) {
             console.log(e)

@@ -2,6 +2,7 @@ import './components/hologram.js'
 import './components/swim-controls.js'
 import './components/orthogonal-camera.js'
 import './components/radar-device/radar-device.js'
+import './components/fish-flock.js'
 import hologramController from './actions/activateHologram.js'
 import radarDeviceController from './actions/activateRadarDevice.js'
 import STATE from './state.js'
@@ -73,18 +74,12 @@ AFRAME.registerComponent('player-collider', {
       new THREE.Vector3(-1, 0, 0),
     ]
 
-
-
     this.land = document.querySelector('#land-model').getObject3D('mesh')
 
   },
   tick: function() {
 
-    //console.log(this.position)
-    // For each ray
-    var collisions
-    var scale = 0.1
-  //  console.log(this.mesh.getWorldPosition(handVec))
+
     for (var i = 0; i < this.rays.length; i += 1) {
 
       let handVec = new THREE.Vector3()
@@ -96,7 +91,7 @@ AFRAME.registerComponent('player-collider', {
       )
 
       // Test if we intersect with any obstacle mesh
-      collisions = caster.intersectObjects(collidableMeshList, true);
+      var collisions = caster.intersectObjects(collidableMeshList, true);
       if ( collisions.length > 0 ) {
         //console.log( collisions[0].distance, collisions[ 0 ].face.normal, this.rays[i] )
 
@@ -105,8 +100,6 @@ AFRAME.registerComponent('player-collider', {
         this.position.z -= this.rays[i].z * (2.0 - collisions[0].distance)
 
       }
-
-
     }
   }
 })

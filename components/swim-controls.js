@@ -12,7 +12,7 @@ AFRAME.registerComponent('swim-controls', {
     this.scale = 0.2
 
 
-    this.move = {x: 0, y:0, z:0 }
+    this.move = new THREE.Vector3()
     document.addEventListener('keydown', e => {
       //spacebar
       if (e.keyCode == 32) {
@@ -34,12 +34,12 @@ AFRAME.registerComponent('swim-controls', {
     document.addEventListener('keyup', e => {
       //spacebar
       if (e.keyCode == 32) {
-        this.move = {x: 0, y:0, z:0 }
+        this.move = new THREE.Vector3()
         this.run = false
       }
       //'c' key
       if (e.keyCode == 67) {
-        this.move = {x: 0, y:0, z:0 }
+        this.move = new THREE.Vector3()
         this.run = false
       }
     })
@@ -51,10 +51,12 @@ AFRAME.registerComponent('swim-controls', {
     //if (!this.setup) return
     if (!this.run) return
 
-
+    this.position.add(this.move.clone().multiplyScalar(this.scale))
+/*
     this.position.x += this.move.x * this.scale
     this.position.y += this.move.y * this.scale
     this.position.z += this.move.z * this.scale
+    */
 
 
   }
