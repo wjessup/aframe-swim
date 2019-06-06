@@ -7,7 +7,13 @@
     <script src="./App.js" type="module"></script>
     <script type="module" defer>
 
-      let bodyHTML = `<a-scene fog="type: linear; color: #2D9CDB; far:40;">
+      let bodyHTML = `
+      <div id="notification">
+        <p>Mouse to look around, WASD to move. </p>
+        <p>SPACE goes up. 'c' goes down</p>
+        <p>'q' turns on super radar</p>
+      </div>
+      <a-scene fog="type: linear; color: #2D9CDB; far:40;">
         <a-assets>
           <a-asset-item id="land" src="./models/land/underwater.gltf"></a-asset-item>
           <!-- <a-asset-item id="fish1"  src="./models/fish2/scene.glb"></a-asset-item> -->
@@ -28,13 +34,32 @@
 
         </a-camera>
         <a-entity game-world></a-entity>
-      </a-scene>`
+      </a-scene>
+
+
+
+      `
 
       document.querySelector('body').innerHTML = bodyHTML
 
     </script>
+    <style>
+      #notification {
+        position: absolute;
+        	top: 0px;
+        	width: 100%;
+        	padding: 10px;
+        	box-sizing: border-box;
+        	text-align: center;
+        	z-index: 10000; /* TODO Solve this in HTML */
+
+      }
+      #notification p {}
+
+</style>
   </head>
   <body>
+
 
   </body>
 
