@@ -34,6 +34,20 @@ AFRAME.registerComponent('game-world', {
 })
 
 let collidableMeshList = [];
+
+AFRAME.registerComponent('expose-model', {
+  init: function () {
+    this.el.addEventListener('model-loaded', () => { this.run() })
+  },
+  run: function() {
+    console.log("FISH LOADED")
+    console.log(this)
+
+  }
+})
+
+
+
 AFRAME.registerComponent('land-collider', {
   init: function () {
 
@@ -49,7 +63,7 @@ AFRAME.registerComponent('land-collider', {
       collidableMeshList.push(node)
     })
 
-    console.log( collidableMeshList )
+    //console.log( collidableMeshList )
 
     document.querySelector('#main-camera').setAttribute('player-collider', '')
 

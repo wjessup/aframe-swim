@@ -33,15 +33,15 @@ AFRAME.registerComponent('fish-flock', {
     this.params = {
         maxSpeed: .015,
         seek: {
-            maxForce: .004
+            maxForce: .01
         },
         align: {
             effectiveRange: 8,
-            maxForce: .0001
+            maxForce: .001
         },
         separate: {
-            effectiveRange: 2,
-            maxForce: .001
+            effectiveRange: 1.5,
+            maxForce: .004
         },
         cohesion: {
             effectiveRange: 1
@@ -50,9 +50,10 @@ AFRAME.registerComponent('fish-flock', {
 
 
 
+
     //add bounding box to scene
     this.boundingBox = new THREE.Mesh(
-      new THREE.BoxGeometry(50, 25, 30, 10, 10, 10),
+      new THREE.BoxGeometry(50, 25, 50, 10, 10, 10),
       //new THREE.BoxGeometry(20, 15, 20, 10, 10, 10),
       new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide })
     )
@@ -77,25 +78,73 @@ AFRAME.registerComponent('fish-flock', {
     })
 
 
-    let width = (this.boundingBox.geometry.parameters.width - this.avoidDistance*2)/2
-    let height = (this.boundingBox.geometry.parameters.height - this.avoidDistance*2)/2
-    let depth = (this.boundingBox.geometry.parameters.depth - this.avoidDistance*2)/2
+    this.spawnFish(creatureNum)
+
+  },
+
+  spawnFish: function(num) {
+
+      let width = (this.boundingBox.geometry.parameters.width - this.avoidDistance*2)/2
+      let height = (this.boundingBox.geometry.parameters.height - this.avoidDistance*2)/2
+      let depth = (this.boundingBox.geometry.parameters.depth - this.avoidDistance*2)/2
 
 
-    //add fish
-    for (let i = 0; i < creatureNum; i++) {
-       const creature = new Creature(width, height, depth, this.boundingBox)
+      //add fish
+      for (let i = 0; i < num; i++) {
 
-       this.creatureMeshGroup.add(creature.mesh)
-       this.creatures.push(creature)
-    }
 
-    //add targets
-    for (let i = 0; i < this.numTargets; i++) {
-      this.spawnTarget()
-    }
+              //var promise = new Promise(function(resolve, reject) {
 
-    this.el.object3D.add(this.creatureMeshGroup)
+                          let loader = new THREE.GLTFLoader()
+                          //loader.setResponseType('arraybuffer')
+
+                          loader.load('../models/fish2/scene.glb', (gltf) => {
+                            console.log("LOADER... FISH... ", gltf.scene)
+
+                            //this.creatures.forEach(creature => creature.setModel(gltf))
+
+                            const creature = new Creature()
+                            creature.mesh = gltf.scene
+
+
+                            creature.mesh.scale.set(.15,.15,.15)
+                            creature.animations = gltf.animations
+                            creature.mesh.position.x = getRandomNum(width, -width)
+                            creature.mesh.position.y = getRandomNum(height, -height)
+                            creature.mesh.position.z = getRandomNum(depth, -depth)
+                            creature.mesh.position.add(this.boundingBox.position)
+                            creature.velocity = new THREE.Vector3(getRandomNum(1, -1) * 0.3, getRandomNum(1, -1) * 0.3, getRandomNum(1, -1) * 0.3);
+                            creature.clock = new THREE.Clock()
+                            creature.clock.start()
+                            creature.mixer = new THREE.AnimationMixer(creature.mesh);
+
+                            // Play a specific animation
+                            var clip = THREE.AnimationClip.findByName(creature.animations, 'ArmatureAction')
+                            var action = creature.mixer.clipAction( clip );
+                            action.play();
+
+                            this.creatureMeshGroup.add(creature.mesh)
+                            this.creatures.push(creature)
+
+                          }, undefined, (error) => {
+                            var message = (error && error.message) ? error.message : 'Failed to load glTF model';
+                            console.log(message)
+                          })
+
+
+
+              //  resolve("Stuff worked!");
+
+              //});
+
+      }
+
+      //add targets
+      for (let i = 0; i < this.numTargets; i++) {
+        this.spawnTarget()
+      }
+
+      this.el.object3D.add(this.creatureMeshGroup)
   },
 
   spawnTarget: function() {
@@ -129,7 +178,12 @@ AFRAME.registerComponent('fish-flock', {
 
 
   tick: function() {
+    //if (!this.fishLoaded) return
+
     this.creatures.forEach(creature => {
+
+      var delta = creature.clock.getDelta() *2
+      creature.mixer.update(delta)
 
 
        let steerVector = new THREE.Vector3()
@@ -293,34 +347,19 @@ AFRAME.registerComponent('fish-flock', {
 
   cohesion: function(currentCreature) {
 
-    let otherCreatures = this.creatures.filter(creature => creature != currentCreature)
-    //console.log("otherCreatuers", otherCreatures)
     const effectiveRange = 16
-    let nearCreatures = otherCreatures.filter(creature => {
-      //console.log("distance = ", currentCreature.mesh.position.distanceTo(creature.mesh.position))
-      return currentCreature.mesh.position.distanceTo(creature.mesh.position) < effectiveRange
+    let otherCreatures = this.creatures.filter(creature => creature != currentCreature)
+    let nearCreatures = otherCreatures.filter(creature => currentCreature.mesh.position.distanceTo(creature.mesh.position) < effectiveRange)
 
-    })
-  //  console.log("nearCreatures = ", nearCreatures)
-
-
+    let positions = nearCreatures.map(creature => creature.mesh.position)
     let staringPoint = currentCreature.mesh.position.clone()
-    let center = (nearCreatures.length > 0) ? getCenterPoint(staringPoint, nearCreatures) : new THREE.Vector3()
+    let centerPoint = positions.reduce((acc, cur) => acc.add(cur), staringPoint)
 
-    function getCenterPoint(staringPoint, nearCreatures) {
-      let positions = nearCreatures.map(creature => creature.mesh.position)
+    centerPoint.divideScalar(nearCreatures.length + 1)
 
-      //console.log("positions = ", positions)
-      let centerPoint = positions.reduce((acc, cur) => acc.add(cur), staringPoint)
-      //console.log(centerPoint)
-      centerPoint.divideScalar(nearCreatures.length+1)
-      //centerPoint.normalize()
-      //console.log("center point = ", centerPoint)
+    return this.seek(currentCreature, centerPoint)
 
 
-      //centerPoint.sub(me)
-      return centerPoint
-    }
 
     //TODO WHY THE HELL DOES THIS WORK OK?????
     return this.seek(currentCreature, center)
@@ -338,6 +377,30 @@ AFRAME.registerComponent('fish-flock', {
         steerVector.clampLength(0, .02);
     }
     return steerVector;
+
+
+
+choesin(currentCreature) {
+        const sumVector = new THREE.Vector3();
+        let cnt = 0;
+        const effectiveRange = this.params.choesin.effectiveRange;
+        const steerVector = new THREE.Vector3();
+
+        this.creatures.forEach((creature) => {
+            const dist = currentCreature.mesh.position.distanceTo(creature.mesh.position);
+            if (dist > 0 && dist < effectiveRange) {
+                sumVector.add(creature.mesh.position);
+                cnt++;
+            }
+        })
+
+        if (cnt > 0) {
+            sumVector.divideScalar(cnt);
+            steerVector.add(this.seek(currentCreature, sumVector));
+        }
+
+        return steerVector;
+    }
 */
 
   },
@@ -361,34 +424,23 @@ AFRAME.registerComponent('fish-flock', {
 
 
 class Creature {
-    constructor(width, height, depth, boundingBox) {
+    constructor() {
+
+        //console.log( THREE.Cache.files['./models/fish2/scene.glb'] )
         const geometry = new THREE.CylinderGeometry(.1, .3, 1)
         geometry.rotateX(THREE.Math.degToRad(90));
         //geometry.scale(.4, .4, .4)
         //const color = new THREE.Color(`hsl(${getRandomNum(360)}, 100%, 50%)`);
         const material = new THREE.MeshBasicMaterial()
-        this.mesh = new THREE.Mesh(geometry, material);
-        //console.log(this.mesh.material)
-/*
-        this.mesh.position.x = 4
-        this.mesh.position.y = 0
-        this.mesh.position.z = 0
-        this.velocity = new THREE.Vector3(1, 1, 1)
-
-*/
-        this.mesh.position.x = getRandomNum(width, -width)
-        this.mesh.position.y = getRandomNum(height, -height)
-        this.mesh.position.z = getRandomNum(depth, -depth)
-        this.mesh.position.add(boundingBox.position)
-        this.velocity = new THREE.Vector3(getRandomNum(1, -1) * 0.3, getRandomNum(1, -1) * 0.3, getRandomNum(1, -1) * 0.3);
-
+        //this.mesh = new THREE.Mesh(geometry, material);
 
         //this.acceleration = new THREE.Vector3();
         this.wonderTheta = 0;
         this.maxSpeed = .05
         this.hunger = 0
-
     }
+
+
 
     getNearbyTarget(targets) {
 
@@ -419,12 +471,9 @@ class Creature {
       }
     }
 
-/*
-    applyForce(f) {
-        this.acceleration.add(f.clone())
-    }
-*/
     update(steerVector) {
+
+
        this.hunger += .1
        if (this.hunger >= 99) {
          this.hunger = 90
@@ -432,12 +481,15 @@ class Creature {
 
        this.trueSpeed = this.maxSpeed + this.hunger/1000
 
-       this.mesh.material.color = new THREE.Color(`rgb(100%, ${100 - Math.floor(this.hunger)}%, ${100 - Math.floor(this.hunger)}%)`)
+       //this.mesh.material.color = new THREE.Color(`rgb(100%, ${100 - Math.floor(this.hunger)}%, ${100 - Math.floor(this.hunger)}%)`)
        //console.log(this.mesh.material.color.opacity)
         // update velocity
         //this.velocity.add(this.acceleration);
         //console.log("this velcoity = ", this.velocity, steerVector)
+
         this.velocity.add(steerVector);
+        //this.velocity.y = 0 //gives a way to clamp heigh change tho...
+      //  console.log(this.mesh.rotation)
 
         this.velocity.normalize()
         //console.log("this velcoity = ", this.velocity)
@@ -467,7 +519,48 @@ class Creature {
         var axis = new THREE.Vector3(0, 0, 1)
         this.mesh.quaternion.setFromUnitVectors(axis, this.velocity.clone().normalize())
 
+      //  let quat = this.mesh.quaternion.clone()
+      //  quat.setFromUnitVectors(axis, this.velocity.clone().normalize())
+
+    //  console.log(this.velocity)
+    //  console.log(this.mesh.rotation)
+
+      //  let velNorm = this.velocity.clone().normalize()
+
+      //  let rEuler = this.mesh.rotation.clone().toVector3(velNorm)
+      //  console.log(this.mesh.rotation)
+
+
+
+
 
     }
 
 }
+
+
+
+
+
+
+/*
+
+cohesion: function(currentCreature) {
+  const effectiveRange = 16
+  let otherCreatures = this.creatures.filter(creature => creature != currentCreature)
+  let nearCreatures = otherCreatures.filter(creature => currentCreature.mesh.position.distanceTo(creature.mesh.position) < effectiveRange)
+
+  let staringPoint = currentCreature.mesh.position.clone()
+  let center = (nearCreatures.length > 0) ? getCenterPoint(staringPoint, nearCreatures) : new THREE.Vector3()
+
+  function getCenterPoint(staringPoint, nearCreatures) {
+    let positions = nearCreatures.map(creature => creature.mesh.position)
+    let centerPoint = positions.reduce((acc, cur) => acc.add(cur), staringPoint)
+
+    centerPoint.divideScalar(nearCreatures.length+1)
+    return centerPoint
+  }
+  return this.seek(currentCreature, center)
+}
+
+  */

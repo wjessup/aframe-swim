@@ -1068,7 +1068,7 @@
   ],
   "meshes": [
     {
-      "name": "Discus_Final_01 - Default_0",
+      "name": "fisha",
       "primitives": [
         {
           "attributes": {
@@ -1091,7 +1091,7 @@
       "children": [
         1
       ],
-      "name": "RootNode (gltf orientation matrix)",
+      "name": "fisha",
       "rotation": [
         -0.70710678118654746,
         -0,
@@ -1127,13 +1127,13 @@
         0,
         1
       ],
-      "name": "8d6a82af51fc4283b736b59c57e071bf.fbx"
+      "name": "fisha"
     },
     {
       "children": [
         4
       ],
-      "name": ""
+      "name": "fisha"
     },
     {
       "children": [
@@ -1143,7 +1143,7 @@
       "name": "RootNode"
     },
     {
-      "name": "Discus_Final",
+      "name": "fisha",
       "rotation": [
         8.1460342471473268e-08,
         0,
@@ -1165,7 +1165,7 @@
       "children": [
         7
       ],
-      "name": "Dummy001",
+      "name": "fish",
       "rotation": [
         -0.70441603660583496,
         -0.061628419905900955,
@@ -1447,4 +1447,3 @@
     }
   ]
 }
-
