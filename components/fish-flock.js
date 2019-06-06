@@ -98,7 +98,7 @@ AFRAME.registerComponent('fish-flock', {
                           let loader = new THREE.GLTFLoader()
                           //loader.setResponseType('arraybuffer')
 
-                          loader.load('../models/fish2/scene.glb', (gltf) => {
+                          loader.load('./models/fish2/scene.glb', (gltf) => {
                             console.log("LOADER... FISH... ", gltf.scene)
 
                             //this.creatures.forEach(creature => creature.setModel(gltf))
